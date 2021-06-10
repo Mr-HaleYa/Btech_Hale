@@ -8,6 +8,7 @@
 
 #define IRL 0
 #define IRR 1
+#define IRM 2
 
 unsigned long myTime = millis();
 
@@ -29,10 +30,17 @@ void loop() {
 }
 
 void autoNav() {
-  //  int dist = analogRead( IRL );
-
-  forward1   (100 * 1000);
-
+  int distL = analogRead( IRL );
+  int distR = analogRead( IRR );
+  if (distL > 600 || distR > 600 ) {
+    if (distL > 600) {
+      right (1 * 100);
+    } else if ( distR > 600 ) {
+      left (1 * 100);
+    }
+  } else {
+    forward   (2 * 100);
+  }
 }
 
 void track() {
@@ -96,7 +104,7 @@ void forward (int x) {
   Serial.println("\nForward");
   myTime = millis();
   Serial.print("Start - "); Serial.println(myTime);
-  analogWrite (EN1, 250);
+  analogWrite (EN1, 230);
   digitalWrite(MC1A, LOW);
   digitalWrite (MC2A, HIGH);
   analogWrite (EN2, 255);
