@@ -36,17 +36,11 @@ void setup() {
   Serial.println("\nSTART OF SKETCH\n");
 }
 
+
 void loop() {
-  //track();
   autoNav();
-  //test();
 }
 
-void test() {
-  forward ( 5 * 1000 );
-  back    ( 5 * 1000 );
-  brake   ( 100 * 1000 );
-}
 
 void autoNav() {
   int distL = analogRead( IRL );
@@ -72,68 +66,10 @@ void autoNav() {
       }
     }
   } else {
-    forward   (2 * 100);
+    forward   (1 * 100);
   }
 }
 
-
-
-void track() {
-  forward   (1.5 * 1000);
-  left      (1.5 * 100);
-  forward   (1 * 1000);
-  left      (1 * 100);
-  forward   (0.3 * 1000);
-
-
-  left      (7 * 100);
-
-
-  forward   (0.6 * 1000);
-
-
-  left      (7 * 100);
-
-
-  forward   (3 * 1000);
-  right     (2 * 100);
-  forward   (3 * 100);
-  right     (2 * 100);
-  forward   (2 * 1000);
-  right     (2 * 100);
-  forward   (4 * 1000);
-  right     (2 * 100);
-  forward   (1 * 1000);
-  right     (2 * 1000);
-  forward   (2 * 1000);
-  brake     (3 * 1000);
-  while (1) {
-  }
-}
-
-void forward1 (int x) {
-  int L = 0;
-  int R = 0;
-  int MSL = 0;
-  int MSR = 0;
-  Serial.println("\nForward");
-  myTime = millis();
-  Serial.print("Start - "); Serial.println(myTime);
-  while (myTime + x > millis()) {
-    L = analogRead( IRL );
-    R = analogRead( IRR );
-    MSL = map( L, 800 , 400 , 0, 255 );
-    Serial.println(MSL);
-    MSR = map( R, 800 , 400 , 0, 255 );
-    analogWrite (EN1, MSR);   // LEFT MOTOR
-    digitalWrite(MC1A, LOW);
-    digitalWrite (MC2A, HIGH);
-    analogWrite (EN2, MSL);   // RIGHT MOTOR
-    digitalWrite(MC3A, LOW);
-    digitalWrite (MC4A, HIGH);
-  }
-  Serial.print("End - "); Serial.println(millis());
-}
 
 
 /*------------------------------------------------------*/
@@ -243,7 +179,7 @@ void sharpRight (int x) {
 
   digitalWrite(MC3A, HIGH);
   digitalWrite(MC4A, LOW);
-  analogWrite(EN2, 128);
+  analogWrite(EN2, 140);
 
   while (myTime + x > millis()) {
     delay(10);
@@ -262,7 +198,7 @@ void sharpLeft (int x) {
 
   digitalWrite(MC1A, HIGH);
   digitalWrite(MC2A, LOW);
-  analogWrite(EN1, 255);
+  analogWrite(EN1, 140);
 
   digitalWrite(MC3A, LOW);
   digitalWrite(MC4A, HIGH);
