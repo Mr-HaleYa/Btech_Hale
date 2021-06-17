@@ -1,6 +1,7 @@
 #include <Servo.h>
 #include <LiquidCrystal.h>
 #include <Servo.h>
+#include <Wire.h>
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
@@ -43,25 +44,37 @@ byte fan_off[8] = {
 };
 
 //Pin Connections
-const int SPEAKER = 22;
+const int FAN = 22;
+const int LIGHT = 23;
 const int DOWN_BUTTON = 24;
 const int UP_BUTTON = 26;
-const int FAN = 22;
 const int TEMP = A7;
 const int SERVO = 12;
+const int temp_address = 72;
 
 //Variables for debouncing
-boolean lastDownTempButton = LOW;
-boolean currentDownTempButton = LOW;
-boolean lastUpTempButton = LOW;
-boolean currentUpTempButton = LOW;
+bool lastDownTempButton = LOW;
+bool currentDownTempButton = LOW;
+bool lastUpTempButton = LOW;
+bool currentUpTempButton = LOW;
+bool tempBuffer = false;
+bool low_latch = false;
+bool high_latch = false;
 
-int set_temp = 50; //The Default desired temperature
-boolean one_time = false; //Used for making the speaker beep only one time
+long int Time = millis();
+
+int set_temp = 28; //The Default desired temperature
+int c = set_temp;
 
 void setup() {
+  Serial.begin(9600);
+  Serial.println("\n");
+  Wire.begin();
   pinMode(FAN, OUTPUT);
+  pinMode(LIGHT, OUTPUT);
+
   myservo.attach(SERVO);
+  myservo.write(145);
 
   //Set up the LCD's number of columns and rows
   lcd.begin(16, 2);
@@ -89,8 +102,8 @@ void setup() {
 }
 
 //A debouncing function that can be used by multiple buttons
-boolean debounce(boolean last, int pin) {
-  boolean current = digitalRead(pin);
+bool debounce(bool last, int pin) {
+  bool current = digitalRead(pin);
   if (last != current) {
     delay(5);
     current = digitalRead(pin);
@@ -98,12 +111,27 @@ boolean debounce(boolean last, int pin) {
   return current;
 }
 
-void loop() {
-  int c = analogRead(TEMP); //Get the temp in C
+int tempC() {
+  Wire.beginTransmission(temp_address);
+  Wire.write(0);
+  Wire.endTransmission();
+
+  Wire.requestFrom(temp_address, 1);
+  while (Wire.available() == 0);
+  return Wire.read();
+}
+
+void loop () {
+  delay(100);
+  if ( tempC() - 5 > c || tempC() + 5 < c ) { // fixes the temp changing when servo activates
+    // do nothing
+  } else {
+    c = tempC();
+  }
+
   lcd.setCursor(8, 0); //Move the cursor
   lcd.print(c); //Print this new value
-  delay(200);
-  //Debounce both buttons
+
   currentDownTempButton = debounce(lastDownTempButton, DOWN_BUTTON);
   currentUpTempButton = debounce(lastUpTempButton, UP_BUTTON);
 
@@ -113,38 +141,45 @@ void loop() {
   } else if (lastUpTempButton == LOW && currentUpTempButton == HIGH) {
     set_temp++;
   }
-  //Print the set temp
-  lcd.setCursor(8, 1);
-  lcd.print(set_temp);
   lastDownTempButton = currentDownTempButton;
   lastUpTempButton = currentUpTempButton;
 
-  //It's too hot!
-  if (c >= set_temp) {
-    //So that the speaker will only beep one time...
-    myservo.write(0);
-    delay(2000);
-    if (!one_time) {
-      tone(SPEAKER, 400);
-      delay(500);
-      one_time = true;
-    } else {
-      noTone(SPEAKER);
-    }
-    //Turn the fan on and update display
-    digitalWrite(FAN, HIGH);
-    lcd.setCursor(15, 1);
-    lcd.write(2);
-  } else {
+  //Print the set temp
+  lcd.setCursor(8, 1);
+  lcd.print(set_temp);
 
-    //Make sure the speaker is off, reset the “one beep” variable
-    //Update the fan state, and LCD display
-    noTone(SPEAKER);
-    one_time = false;
+  if ( c <= set_temp - 2 || low_latch ) {           // -2 start heating and go until set_temp is met
+    if ( c >= set_temp ) {
+      low_latch = false;
+      Serial.println("low latch false");
+    } else {
+      low_latch = true;
+      Serial.println("low latch true");
+      digitalWrite(LIGHT, HIGH);
+      digitalWrite(FAN, LOW);
+      myservo.write(145);
+    }
+  } else if ( c >= set_temp + 2 || high_latch ) {   // +2 start cooling and go until set_temp is met
+    if ( c <= set_temp ) {
+      high_latch = false;
+      Serial.println("high latch false");
+    } else {
+      high_latch = true;
+      Serial.println("high latch true");
+      digitalWrite(LIGHT, LOW);
+      myservo.write(0);
+      if ( millis() - Time >= 3000 ) {
+        Serial.println("fan on");
+        digitalWrite(FAN, HIGH);
+      }
+    }
+  }
+
+  if ( !low_latch && !high_latch ) {              // -1,0,+1 turn off all heating and cooling because its all good
+    Serial.println("temp is good");
+    digitalWrite(LIGHT, LOW);
     digitalWrite(FAN, LOW);
-    lcd.setCursor(15, 1);
-    lcd.write(1);
     myservo.write(145);
-    delay(2000);
+    Time = millis();
   }
 }
