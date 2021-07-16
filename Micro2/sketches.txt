@@ -1,0 +1,311 @@
+const int ledPin =  9;      // the number of the LED pin
+
+void setup() {
+  pinMode(ledPin, OUTPUT);// initialize the LED pin as an output:
+}
+
+void loop() {
+  for (int x=0; x<256;x++){
+    analogWrite(ledPin, x);
+    delay(10);
+  }
+  for (int x=255; x>=0;x--){
+    analogWrite(ledPin, x);
+    delay(10);
+  }
+}
+
+
+
+
+
+
+const int POT = 0;
+const int YLED = 8;
+const int GLED = 9;
+const int RLED = 10;
+
+void setup() {
+  pinMode (YLED, OUTPUT);
+  pinMode (GLED, OUTPUT);
+  pinMode (RLED, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  while ( analogRead(POT) <= 100 ) {
+    digitalWrite (YLED, HIGH);
+    delay (250);
+    digitalWrite (YLED, LOW);
+    delay(250);
+    Serial.println(analogRead(POT));
+  }
+
+  while ( analogRead(POT) > 100 && analogRead(POT) <= 700 ) {
+    digitalWrite(GLED, HIGH);
+    delay (250);
+    digitalWrite (GLED, LOW);
+    delay(250);
+    Serial.println(analogRead(POT));
+  }
+
+  while ( analogRead(POT) > 700 ) {
+    digitalWrite (RLED, HIGH);
+    delay (250);
+    digitalWrite(RLED, LOW);
+    delay(250);
+    Serial.println(analogRead(POT));
+  }
+}
+
+
+
+
+
+const int RLED = 9;
+const int GLED = 10;
+const int BLED = 11;
+const int BUTTON = 8;
+
+int ledMode = 0;
+
+void setup() {
+  pinMode (BLED, OUTPUT);
+  pinMode (GLED, OUTPUT);
+  pinMode (RLED, OUTPUT);
+  pinMode (BUTTON, INPUT);
+  Serial.begin(9600);
+  Serial.println(ledMode);
+}
+
+void loop() {
+  if (digitalRead(BUTTON) == HIGH) {
+    delay(300);
+    ledMode++;
+    if (ledMode >= 8) {
+      ledMode = 0;
+    }
+    Serial.println(ledMode);
+    setMode();
+  }
+}
+
+
+void setMode()
+{
+  //RED
+  if (ledMode == 1) {           // RED
+    analogWrite (RLED, 255);
+    analogWrite (GLED, 0);
+    analogWrite (BLED, 0);
+  } else if (ledMode == 2) {    //GREEN
+    analogWrite (RLED, 0);
+    analogWrite (GLED, 255);
+    analogWrite (BLED, 0);
+  } else if (ledMode == 3) {    //BLUE
+    analogWrite (RLED, 0);
+    analogWrite (GLED, 0);
+    analogWrite (BLED, 255);
+  } else if (ledMode == 4) {    //PURPLE (RED+BLUE)
+    analogWrite (RLED, 127);
+    analogWrite (GLED, 0);
+    analogWrite (BLED, 127);
+  } else if (ledMode == 5) {    //TEAL (BLUE+GREEN)
+    analogWrite (RLED, 0);
+    analogWrite (GLED, 127);
+    analogWrite (BLED, 127);
+  } else if (ledMode == 6) {    //ORANGE (GREEN+RED)
+    analogWrite (RLED, 127);
+    analogWrite (GLED, 127);
+    analogWrite (BLED, 0);
+  } else if (ledMode == 7) {     //WHITE (GREEN+RED+BLUE)
+    analogWrite (RLED, 85);
+    analogWrite (GLED, 85);
+    analogWrite (BLED, 85);
+  } else {                      //OFF (ledMode = 0)
+    analogWrite (RLED, 0);
+    analogWrite (GLED, 0);
+    analogWrite (BLED, 0);
+  }
+}
+
+
+
+
+
+
+
+
+const int RLED = 9;
+const int GLED = 10;
+const int BLED = 11;
+const int TEMP = 0;
+
+const int LOWER = 50; //Lower Threshold
+const int UPPER = 53; //Upper Threshold
+
+int val = 0;
+
+void setup() {
+  pinMode (BLED, OUTPUT); //Set Blue LED as Output
+  pinMode (GLED, OUTPUT); //Set Green LED as Output
+  pinMode (RLED, OUTPUT); //Set Red LED as Output
+  Serial.begin(9600);
+}
+
+void loop() {
+  val = analogRead(TEMP);
+  if (val > LOWER && val < UPPER) {
+    digitalWrite(RLED, LOW);
+    digitalWrite(GLED, LOW);
+    digitalWrite(BLED, HIGH);
+  } else if (val >= UPPER) {
+    digitalWrite(RLED, HIGH);
+    digitalWrite(GLED, LOW);
+    digitalWrite(BLED, LOW);
+  } else {
+    digitalWrite(RLED, LOW);
+    digitalWrite(GLED, HIGH);
+    digitalWrite(BLED, LOW);
+  }
+  Serial.println(val);
+  delay(1000);
+}
+
+
+
+
+
+
+
+
+const int RLED = 9;
+const int LIGHT = 0;
+
+const int MIN = 65; //Lower Threshold
+const int MAX = 280; //Upper Threshold
+
+int val = 0;
+
+void setup() {
+  pinMode (RLED, OUTPUT); //Set Red LED as Output
+  Serial.begin(9600);
+}
+
+void loop() {
+  val = analogRead(LIGHT);
+  Serial.print(val);Serial.print("\t");
+  val = map( val, MIN, MAX, 255, 0);
+  Serial.print(val);Serial.print("\t");
+  val = constrain(val, 0, 255);
+  Serial.println(val);
+  analogWrite(RLED, val);
+  delay(250);
+}
+
+
+
+
+
+
+
+const int MOTOR = 8;
+const int LED = 9;
+
+void setup() {
+  pinMode (MOTOR, OUTPUT);
+  pinMode (LED, OUTPUT);
+}
+
+void loop() {
+  for (int x = 0; x < 256; x++) {
+    analogWrite(MOTOR, x);
+    analogWrite(LED, x);
+    delay(10);
+  }
+  delay(2000);
+  for (int x = 255; x >= 0; x--) {
+    analogWrite(MOTOR, x);
+    analogWrite(LED, x);
+    delay(10);
+  }
+  delay(2000);
+}
+
+
+
+
+
+
+
+
+
+
+const int EN = 10;
+const int MC1A = 9;
+const int MC2A = 8;
+const int POT = 0;
+
+int val = 0;
+int velocity = 0;
+
+void setup() {
+  pinMode (EN, OUTPUT);
+  pinMode (MC1A, OUTPUT);
+  pinMode (MC2A, OUTPUT);
+  brake ();
+}
+
+void loop() {
+  val = analogRead (POT);
+  if (val > 512) {
+    velocity = map (val, 513, 1023, 0, 255);
+    forward(velocity);
+  } else if (val < 512) {
+    velocity = map (val, 511, 0, 0, 255);
+    reverse (velocity);
+  } else {
+    brake ();
+  }
+}
+
+void forward (int rate) {
+  analogWrite (EN, rate);
+  digitalWrite(MC1A, HIGH);
+  digitalWrite (MC2A, LOW);
+}
+
+void reverse (int rate) {
+  analogWrite(EN, rate);
+  digitalWrite (MC1A, LOW);
+  digitalWrite(MC2A, HIGH);
+}
+
+void brake () {
+  digitalWrite(EN, LOW);
+}
+
+
+
+
+
+
+
+#include <Servo.h>
+
+Servo myservo;    // create servo object to control a servo
+
+const int SERVO = 8;
+int potpin = 0;   // analog pin used to connect the potentiometer
+int val;          // variable to read the value from the analog pin
+
+void setup() {
+  myservo.attach(SERVO);  // attaches the servo on pin 9 to the servo object
+}
+
+void loop() {
+  val = analogRead(potpin);            // reads  potentiometer
+  val = map(val, 0, 1023, 0, 180);     // scale it
+  myservo.write(val);                  // sets servo
+  delay(15);                           // waits for the servo to get there
+}
